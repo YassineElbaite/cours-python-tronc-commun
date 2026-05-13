@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Carte Mentale Python — Apprentissage Actif</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Outfit',sans-serif;background:#f0f4f8;color:#1a1f2e;min-height:100vh;padding:2rem 1rem 4rem;}
+
+/* HEADER */
+.page-header{text-align:center;margin-bottom:2rem;}
+.snake-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#065f46;background:#d1fae5;border:1.5px solid #6ee7b7;padding:5px 16px;border-radius:99px;margin-bottom:.9rem;}
+.page-header h1{font-size:clamp(22px,5vw,34px);font-weight:700;color:#1a1f2e;margin-bottom:.4rem;}
+.page-header h1 span{color:#059669;}
+.page-header p{font-size:14px;color:#4b5563;max-width:480px;margin:0 auto 1.2rem;line-height:1.6;}
+.stats-bar{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;font-size:13px;color:#6b7280;}
+.stats-bar strong{color:#1a1f2e;font-weight:600;}
+
+/* TABS */
+.tabs{max-width:920px;margin:0 auto 1.5rem;display:flex;gap:6px;background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:5px;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.tab-btn{flex:1;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;padding:10px 12px;border-radius:10px;border:none;background:transparent;color:#6b7280;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.tab-btn:hover{background:#f9fafb;color:#1a1f2e;}
+.tab-btn.active{background:#f0fdf4;color:#059669;border:1.5px solid #6ee7b7;}
+.tab-panel{display:none;max-width:920px;margin:0 auto;}
+.tab-panel.active{display:block;}
+
+/* PROGRESS */
+.progress-wrap{background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:1rem 1.25rem;display:flex;align-items:center;gap:16px;margin-bottom:1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.pi .plabel{font-size:12px;color:#6b7280;margin-bottom:4px;}
+.pi .pval{font-size:24px;font-weight:700;color:#1a1f2e;}
+.pt{flex:2;}
+.bw{height:10px;background:#f3f4f6;border-radius:99px;overflow:hidden;}
+.bf{height:100%;background:linear-gradient(90deg,#059669,#34d399);border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1);width:0%;}
+.bl{font-size:12px;color:#9ca3af;margin-top:4px;}
+.rst-btn{font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;padding:7px 14px;border-radius:8px;border:1.5px solid #e5e7eb;background:#fff;color:#6b7280;cursor:pointer;white-space:nowrap;transition:all .15s;}
+.rst-btn:hover{background:#f9fafb;color:#1a1f2e;}
+
+/* CONCEPT CARDS */
+.tree{display:flex;flex-direction:column;gap:10px;}
+.cc{border:1.5px solid #e5e7eb;border-radius:14px;overflow:hidden;transition:border-color .2s;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.cc:hover{border-color:#d1d5db;}
+.cc.open{border-color:#6ee7b7;box-shadow:0 2px 12px rgba(5,150,105,.1);}
+.ch{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;background:#fff;transition:background .15s;}
+.ch:hover{background:#f9fafb;}
+.cico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.ct{flex:1;}
+.ctit{font-size:15px;font-weight:700;color:#1a1f2e;}
+.cdsc{font-size:12px;color:#6b7280;margin-top:2px;}
+.cbdg{font-size:11px;font-weight:700;padding:3px 11px;border-radius:99px;white-space:nowrap;}
+.chv{font-size:18px;color:#9ca3af;transition:transform .22s;flex-shrink:0;}
+.cc.open .chv{transform:rotate(180deg);}
+.cb{display:none;padding:0 14px 14px;background:#fafafa;}
+.cc.open .cb{display:block;}
+
+/* SUBTOPICS — 2 colonnes : gauche (code + ex 1&2) | droite (ex 3&4) */
+.stg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+.st-left{background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;padding:14px;}
+.st-right{background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:0;}
+@media(max-width:680px){.stg{grid-template-columns:1fr;}}
+.stl{font-size:13px;font-weight:700;color:#1a1f2e;margin-bottom:8px;}
+.code-block{font-family:'JetBrains Mono',monospace;font-size:11px;background:#1e2535;border-radius:8px;padding:9px 11px;color:#a5b4fc;white-space:pre;overflow-x:auto;line-height:1.7;}
+.sep{height:1px;background:#f3f4f6;margin:10px 0;}
+.flbl{font-size:12.5px;color:#374151;margin-bottom:6px;line-height:1.4;font-weight:500;}
+.fi{width:100%;font-family:'JetBrains Mono',monospace;font-size:12px;background:#f9fafb;border:1.5px solid #d1d5db;border-radius:7px;padding:7px 10px;color:#1a1f2e;outline:none;transition:all .2s;}
+.fi::placeholder{color:#9ca3af;}
+.fi:focus{border-color:#059669;background:#fff;box-shadow:0 0 0 3px rgba(5,150,105,.1);}
+.fi.correct{border-color:#059669!important;background:#f0fdf4!important;color:#065f46!important;font-weight:600;}
+.fi.wrong{border-color:#ef4444!important;background:#fef2f2!important;}
+.vbtn{font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;margin-top:6px;padding:5px 13px;border-radius:7px;border:1.5px solid #e5e7eb;background:#fff;color:#374151;cursor:pointer;transition:all .15s;}
+.vbtn:hover{background:#f0fdf4;color:#059669;border-color:#6ee7b7;}
+.vbtn:disabled{opacity:.4;cursor:default;}
+.fb{font-size:12px;margin-top:5px;min-height:16px;font-weight:600;}
+.fb.ok{color:#059669;}
+.fb.no{color:#dc2626;}
+
+/* MAP */
+.map-tb{background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.map-tb label{font-size:12px;color:#6b7280;font-weight:500;}
+.tbtn{font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;padding:6px 11px;border-radius:8px;border:1.5px solid #e5e7eb;background:#fff;color:#374151;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.tbtn:hover{background:#f9fafb;border-color:#d1d5db;}
+.tbtn.active{background:#f0fdf4;border-color:#6ee7b7;color:#059669;}
+.tsep{width:1px;height:22px;background:#e5e7eb;flex-shrink:0;}
+.cdot{width:20px;height:20px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:border-color .15s;flex-shrink:0;}
+.cdot:hover,.cdot.sel{border-color:#1a1f2e;}
+.dlbtn{font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;padding:7px 16px;border-radius:8px;border:1.5px solid #6ee7b7;background:#f0fdf4;color:#059669;cursor:pointer;transition:all .15s;margin-left:auto;white-space:nowrap;}
+.dlbtn:hover{background:#d1fae5;}
+#mcw{position:relative;border:1.5px solid #e5e7eb;border-radius:14px;overflow:hidden;background:#fff;cursor:default;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+#mc{display:block;width:100%;touch-action:none;}
+.mhint{font-size:12px;color:#9ca3af;margin-top:8px;text-align:center;line-height:1.6;}
+.mhint strong{color:#6b7280;}
+
+.footer{text-align:center;font-size:12px;color:#9ca3af;margin-top:3rem;padding-top:1.5rem;border-top:1.5px solid #e5e7eb;max-width:920px;margin-left:auto;margin-right:auto;}
+@media(max-width:600px){.stats-bar{gap:10px;}.progress-wrap{flex-direction:column;align-items:flex-start;}.map-tb{gap:5px;}}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="snake-badge">🐍 PFE — Mind Maps numériques</div>
+  <h1>Carte mentale <span>Python</span></h1>
+  <p>Complète les exercices de complétion, puis dessine ta propre carte mentale dans l'onglet ci-dessous.</p>
+  <div class="stats-bar">
+    <span>📚 <strong>6</strong> concepts</span>
+    <span>✏️ <strong>24</strong> exercices</span>
+    <span>🗺️ Zone de schématisation</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('ex',this)">✏️ Exercices de complétion</button>
+  <button class="tab-btn" onclick="switchTab('map',this)">🗺️ Ma carte mentale</button>
+</div>
+
+<!-- TAB EXERCICES -->
+<div class="tab-panel active" id="ex-panel">
+  <div class="progress-wrap">
+    <div class="pi">
+      <div class="plabel">Progression</div>
+      <div class="pval" id="score">0 / 0</div>
+    </div>
+    <div class="pt">
+      <div class="bw"><div class="bf" id="bar"></div></div>
+      <div class="bl" id="bar-lbl">Ouvre un concept pour commencer</div>
+    </div>
+    <button class="rst-btn" onclick="resetAll()">↺ Réinitialiser</button>
+  </div>
+  <div class="tree" id="tree"></div>
+</div>
+
+<!-- TAB CARTE -->
+<div class="tab-panel" id="map-panel">
+  <div class="map-tb">
+    <button class="tbtn active" id="bs" onclick="setTool('select',this)">↖ Sélectionner</button>
+    <button class="tbtn" id="bn" onclick="setTool('node',this)">＋ Nœud</button>
+    <button class="tbtn" id="bl" onclick="setTool('link',this)">⤳ Relier</button>
+    <button class="tbtn" onclick="delSel()">🗑 Supprimer</button>
+    <div class="tsep"></div>
+    <label>Couleur :</label>
+    <div class="cdot sel" style="background:#059669" data-c="#059669" onclick="pickC(this)"></div>
+    <div class="cdot" style="background:#7c3aed" data-c="#7c3aed" onclick="pickC(this)"></div>
+    <div class="cdot" style="background:#ea580c" data-c="#ea580c" onclick="pickC(this)"></div>
+    <div class="cdot" style="background:#d97706" data-c="#d97706" onclick="pickC(this)"></div>
+    <div class="cdot" style="background:#2563eb" data-c="#2563eb" onclick="pickC(this)"></div>
+    <div class="cdot" style="background:#db2777" data-c="#db2777" onclick="pickC(this)"></div>
+    <div class="cdot" style="background:#0891b2" data-c="#0891b2" onclick="pickC(this)"></div>
+    <div class="tsep"></div>
+    <button class="tbtn" onclick="clearM()">🗑 Tout effacer</button>
+    <button class="tbtn" onclick="loadTpl()">📋 Modèle</button>
+    <button class="dlbtn" onclick="dlMap()">⬇ Télécharger PNG</button>
+  </div>
+  <div id="mcw"><canvas id="mc" height="560"></canvas></div>
+  <div class="mhint">
+    <strong>Nœud</strong> → clic sur le canvas pour créer &nbsp;|&nbsp;
+    <strong>Relier</strong> → clic nœud source puis nœud cible &nbsp;|&nbsp;
+    <strong>Sélectionner</strong> → glisser pour déplacer · double-clic pour modifier
+  </div>
+</div>
+
+<div class="footer">Réalisé par AJAHOUD Maryam — PFE : L'utilisation des Mind Maps numériques comme outil d'apprentissage actif en informatique</div>
+
+<script>
+/* TAB */
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id+'-panel').classList.add('active');
+  btn.classList.add('active');
+  if(id==='map')resizeC();
+}
+
+/* ═══ DONNÉES — 4 exercices par section ═══ */
+const concepts=[
+  {
+    title:"Variables",desc:"Stocker et nommer des données en mémoire",icon:"📦",
+    iconBg:"#d1fae5",badgeTxt:"Fondamental",badgeBg:"#d1fae5",badgeC:"#065f46",
+    subtopics:[
+      {label:"Déclaration et types",
+       ex:"age = 17          # int\nnote = 14.5       # float\nnom = 'Youssef'   # str\nrecu = True       # bool",
+       fills:[
+         {q:"Déclare une variable 'ville' avec la valeur 'Marrakech'",ans:"ville = 'Marrakech'",hint:"nom_variable = valeur"},
+         {q:"Déclare une variable 'nb_eleves' avec la valeur 30",ans:"nb_eleves = 30",hint:"nom_variable = valeur"},
+         {q:"Quel est le type de : x = 3.14 ?",ans:"float",hint:"int / float / str / bool"},
+         {q:"Quel est le type de : nom = 'Ali' ?",ans:"str",hint:"int / float / str / bool"}
+       ]}
+    ]
+  },
+  {
+    title:"print() et input()",desc:"Afficher des messages et saisir des données",icon:"💬",
+    iconBg:"#ede9fe",badgeTxt:"Entrée / Sortie",badgeBg:"#ede9fe",badgeC:"#4c1d95",
+    subtopics:[
+      {label:"print() et input()",
+       ex:'print("Bonjour !")\nprint("Note :", note)\nnom = input("Ton nom : ")\nprint("Bonjour", nom)',
+       fills:[
+         {q:"Affiche le message : Bonjour Python",ans:'print("Bonjour Python")',hint:'utilise print(...)'},
+         {q:"Affiche : La moyenne est : suivi de la variable 'moy'",ans:'print("La moyenne est :", moy)',hint:'print("texte", variable)'},
+         {q:"Demande le prénom et stocke-le dans 'prenom'",ans:'prenom = input("Ton prenom : ")',hint:'variable = input("message")'},
+         {q:"Affiche les deux variables prenom et age",ans:"print(prenom, age)",hint:'print(var1, var2)'}
+       ]}
+    ]
+  },
+  {
+    title:"Structures conditionnelles",desc:"if / elif / else — prendre des décisions",icon:"🔀",
+    iconBg:"#ffedd5",badgeTxt:"Contrôle",badgeBg:"#ffedd5",badgeC:"#7c2d12",
+    subtopics:[
+      {label:"if / elif / else",
+       ex:"if note >= 16:\n    print('Tres bien')\nelif note >= 10:\n    print('Recu')\nelse:\n    print('Non recu')",
+       fills:[
+         {q:"Si age >= 18, affiche 'Majeur'",ans:"if age >= 18:\n    print('Majeur')",hint:"if condition: ..."},
+         {q:"Sinon (else), affiche 'Mineur'",ans:"else:\n    print('Mineur')",hint:"else: ..."},
+         {q:"Que s'affiche-t-il si note = 13 dans l'exemple ?",ans:"Recu",hint:"TB / Recu / Non recu"},
+         {q:"Que s'affiche-t-il si note = 7 dans l'exemple ?",ans:"Non recu",hint:"regarde le else"}
+       ]}
+    ]
+  },
+  {
+    title:"Boucle for",desc:"Répéter des instructions un nombre de fois",icon:"🔁",
+    iconBg:"#fce7f3",badgeTxt:"Itération",badgeBg:"#fce7f3",badgeC:"#831843",
+    subtopics:[
+      {label:"for avec range() et liste",
+       ex:"for i in range(5):\n    print(i)  # 0 1 2 3 4\n\nfruits = ['pomme','banane']\nfor fruit in fruits:\n    print(fruit)",
+       fills:[
+         {q:"Écris une boucle qui affiche 0 1 2 3 4",ans:"for i in range(5):\n    print(i)",hint:"for ... in range(...):"},
+         {q:"Écris une boucle qui affiche 1 2 3 4 5",ans:"for i in range(1, 6):\n    print(i)",hint:"range(début, fin)"},
+         {q:"Affiche chaque élément de la liste 'notes'",ans:"for n in notes:\n    print(n)",hint:"for element in liste:"},
+         {q:"Combien de fois s'exécute : for i in range(4) ?",ans:"4",hint:"compte les valeurs générées"}
+       ]}
+    ]
+  },
+  {
+    title:"Listes",desc:"Séquences ordonnées de valeurs",icon:"📋",
+    iconBg:"#fef3c7",badgeTxt:"Structures",badgeBg:"#fef3c7",badgeC:"#78350f",
+    subtopics:[
+      {label:"Créer, accéder, modifier",
+       ex:"notes = [12, 15, 9, 18]\nprint(notes[0])      # 12\nprint(notes[-1])     # 18\nnotes.append(17)     # ajouter\nnotes.remove(9)      # supprimer",
+       fills:[
+         {q:"Crée une liste 'notes' avec les valeurs 12, 15, 9",ans:"notes = [12, 15, 9]",hint:"variable = [val1, val2, ...]"},
+         {q:"Accède au 1er élément de 'notes'",ans:"notes[0]",hint:"liste[indice]"},
+         {q:"Ajoute 18 à la fin de la liste 'notes'",ans:"notes.append(18)",hint:"liste.méthode(valeur)"},
+         {q:"Supprime la valeur 9 de la liste 'notes'",ans:"notes.remove(9)",hint:"liste.méthode(valeur)"}
+       ]}
+    ]
+  },
+  {
+    title:"Fonctions (def)",desc:"Créer des blocs de code réutilisables",icon:"⚙️",
+    iconBg:"#dbeafe",badgeTxt:"Modularité",badgeBg:"#dbeafe",badgeC:"#1e3a8a",
+    subtopics:[
+      {label:"Définir, appeler, paramètres, return",
+       ex:"def saluer(nom):\n    print('Bonjour', nom)\n\ndef carre(x):\n    return x * x\n\nsaluer('Ali')\nprint(carre(4))  # 16",
+       fills:[
+         {q:"Crée une fonction 'afficher' qui affiche 'Python'",ans:"def afficher():\n    print('Python')",hint:"def nom_fonction():"},
+         {q:"Appelle la fonction 'saluer' avec le prénom 'Sara'",ans:"saluer('Sara')",hint:"nom_fonction(argument)"},
+         {q:"Crée une fonction qui retourne le double de x",ans:"def double(x):\n    return x * 2",hint:"def nom(param): return ..."},
+         {q:"Que retourne carre(3) dans l'exemple ci-dessus ?",ans:"9",hint:"3 * ? = ?"}
+       ]}
+    ]
+  }
+];
+
+/* ═══ EXERCICES LOGIC ═══ */
+let total=0, correctIds=new Set();
+
+function norm(s){return s.replace(/\s+/g,'').toLowerCase().replace(/['"«»''""éèêëàâùûüî]/g,c=>c);}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escJ(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');}
+
+function updProg(){
+  const pct=total?Math.round(correctIds.size/total*100):0;
+  document.getElementById('score').textContent=correctIds.size+' / '+total;
+  document.getElementById('bar').style.width=pct+'%';
+  document.getElementById('bar-lbl').textContent=pct===100?'🎉 Excellent ! Tous les exercices sont réussis !':pct+'% complété';
+}
+
+function normalizeAns(s){
+  return s
+    .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'")
+    .replace(/\s+/g,'').toLowerCase()
+    .replace(/['"]/g,"'");
+}
+function checkA(uid){
+  const inp=document.getElementById('i_'+uid);
+  const fb=document.getElementById('f_'+uid);
+  const btn=document.querySelector('[data-uid="'+uid+'"]');
+  const expected=btn?btn.getAttribute('data-ans'):'';
+  const val=inp.value.trim();
+  if(!val){fb.textContent='⬆ Écris ta réponse !';fb.className='fb no';return;}
+  // comparaison souple : espaces + casse + guillemets interchangeables
+  const nVal=normalizeAns(val);
+  const nExp=normalizeAns(expected);
+  if(nVal===nExp){
+    fb.textContent='✓ Correct ! Bravo !';fb.className='fb ok';
+    inp.classList.remove('wrong');inp.classList.add('correct');inp.readOnly=true;
+    if(btn)btn.disabled=true;
+    correctIds.add(uid);
+  } else {
+    fb.textContent='✗ Pas tout à fait... Réessaie !';fb.className='fb no';
+    inp.classList.remove('correct');inp.classList.add('wrong');correctIds.delete(uid);
+  }
+  updProg();
+}
+
+function buildTree(){
+  const tree=document.getElementById('tree');
+  tree.innerHTML='';total=0;correctIds.clear();
+  concepts.forEach((c,ci)=>{
+    const card=document.createElement('div');card.className='cc';
+    const hdr=document.createElement('div');hdr.className='ch';
+    const nEx=c.subtopics.reduce((s,st)=>s+st.fills.length,0);
+    hdr.innerHTML=`<div class="cico" style="background:${c.iconBg}">${c.icon}</div>
+      <div class="ct"><div class="ctit">${c.title}</div><div class="cdsc">${c.desc}</div></div>
+      <span class="cbdg" style="background:${c.badgeBg};color:${c.badgeC}">${c.badgeTxt} · ${nEx} ex.</span>
+      <span class="chv">▾</span>`;
+    const body=document.createElement('div');body.className='cb';
+    const grid=document.createElement('div');grid.className='stg';
+
+    c.subtopics.forEach((s,si)=>{
+      // Colonne GAUCHE : code + exercices 1 & 2
+      const left=document.createElement('div');left.className='st-left';
+      let leftHtml=`<div class="stl">${s.label}</div><div class="code-block">${esc(s.ex)}</div>`;
+      s.fills.slice(0,2).forEach((f,fi)=>{
+        const uid=`${ci}_${si}_${fi}`;total++;
+        leftHtml+=`<div class="sep"></div><div>
+          <div class="flbl">✏️ ${esc(f.q)}</div>
+          <input class="fi" id="i_${uid}" placeholder="${esc(f.hint)}" autocomplete="off" spellcheck="false"
+            onkeydown="if(event.key==='Enter')checkA('${uid}')" />
+          <button class="vbtn" data-uid="${uid}" data-ans="${esc(f.ans)}" onclick="checkA('${uid}')">Vérifier ✓</button>
+          <div class="fb" id="f_${uid}"></div></div>`;
+      });
+      left.innerHTML=leftHtml;
+
+      // Colonne DROITE : exercices 3 & 4
+      const right=document.createElement('div');right.className='st-right';
+      let rightHtml=`<div class="stl">Exercices</div>`;
+      s.fills.slice(2,4).forEach((f,fi)=>{
+        const uid=`${ci}_${si}_${fi+2}`;total++;
+        rightHtml+=`<div class="sep"></div><div>
+          <div class="flbl">✏️ ${esc(f.q)}</div>
+          <input class="fi" id="i_${uid}" placeholder="${esc(f.hint)}" autocomplete="off" spellcheck="false"
+            onkeydown="if(event.key==='Enter')checkA('${uid}')" />
+          <button class="vbtn" data-uid="${uid}" data-ans="${esc(f.ans)}" onclick="checkA('${uid}')">Vérifier ✓</button>
+          <div class="fb" id="f_${uid}"></div></div>`;
+      });
+      right.innerHTML=rightHtml;
+
+      grid.appendChild(left);
+      grid.appendChild(right);
+    });
+
+    body.appendChild(grid);
+    hdr.onclick=()=>card.classList.toggle('open');
+    card.appendChild(hdr);card.appendChild(body);tree.appendChild(card);
+  });
+  updProg();
+}
+function resetAll(){buildTree();}
+buildTree();
+
+/* ═══ CARTE MENTALE — FOND BLANC ═══ */
+const canvas=document.getElementById('mc');
+const ctx=canvas.getContext('2d');
+let W=800,H=560;
+let tool='select',curColor='#059669';
+let nodes=[],edges=[];
+let selNode=null,linkSrc=null;
+let dragging=false,dragNode=null,dragOx=0,dragOy=0;
+let mouseX=0,mouseY=0;
+
+function resizeC(){
+  const wrap=document.getElementById('mcw');
+  W=wrap.clientWidth||800;
+  canvas.width=W;canvas.height=H;
+  draw();
+}
+
+function setTool(t,btn){
+  tool=t;linkSrc=null;selNode=null;
+  document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  canvas.style.cursor=t==='node'?'crosshair':t==='link'?'cell':'default';
+  draw();
+}
+
+function pickC(dot){
+  document.querySelectorAll('.cdot').forEach(d=>d.classList.remove('sel'));
+  dot.classList.add('sel');
+  curColor=dot.dataset.c;
+  if(selNode){selNode.color=curColor;draw();}
+}
+
+function addN(x,y,text,color){
+  const n={id:Date.now()+'_'+Math.random(),x,y,text:text||'',color:color||curColor,w:0,h:0};
+  measureN(n);nodes.push(n);return n;
+}
+
+function measureN(n){
+  ctx.font='bold 13px Outfit,sans-serif';
+  const lines=n.text.split('\n');
+  n.w=Math.max(...lines.map(l=>ctx.measureText(l).width))+28;
+  n.h=lines.length*20+18;
+  n.w=Math.max(n.w,90);
+}
+
+function nodeAt(x,y){
+  for(let i=nodes.length-1;i>=0;i--){
+    const n=nodes[i];
+    if(x>=n.x-n.w/2&&x<=n.x+n.w/2&&y>=n.y-n.h/2&&y<=n.y+n.h/2)return n;
+  }return null;
+}
+
+/* Mélanger la couleur avec du blanc */
+function lighten(hex,t){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return 'rgb('+Math.round(r+(255-r)*t)+','+Math.round(g+(255-g)*t)+','+Math.round(b+(255-b)*t)+')';
+}
+
+function roundR(c,x,y,w,h,r){
+  c.beginPath();
+  c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);
+  c.lineTo(x+w,y+h-r);c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  c.lineTo(x+r,y+h);c.quadraticCurveTo(x,y+h,x,y+h-r);
+  c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);
+  c.closePath();
+}
+
+function draw(){
+  /* FOND BLANC */
+  ctx.fillStyle='#ffffff';
+  ctx.fillRect(0,0,W,H);
+
+  /* Grille gris très léger */
+  ctx.strokeStyle='rgba(0,0,0,0.045)';
+  ctx.lineWidth=1;
+  for(let x=0;x<W;x+=30){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=30){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+  /* ARÊTES */
+  edges.forEach(e=>{
+    const a=nodes.find(n=>n.id===e.a),b=nodes.find(n=>n.id===e.b);
+    if(!a||!b)return;
+    const mx=(a.x+b.x)/2,my=(a.y+b.y)/2-20;
+    ctx.beginPath();ctx.moveTo(a.x,a.y);
+    ctx.quadraticCurveTo(mx,my,b.x,b.y);
+    ctx.strokeStyle='#94a3b8';ctx.lineWidth=2;ctx.stroke();
+    const ang=Math.atan2(b.y-my,b.x-mx);
+    ctx.beginPath();
+    ctx.moveTo(b.x,b.y);
+    ctx.lineTo(b.x-9*Math.cos(ang-.4),b.y-9*Math.sin(ang-.4));
+    ctx.lineTo(b.x-9*Math.cos(ang+.4),b.y-9*Math.sin(ang+.4));
+    ctx.closePath();ctx.fillStyle='#94a3b8';ctx.fill();
+  });
+
+  /* Prévisualisation lien */
+  if(tool==='link'&&linkSrc){
+    ctx.beginPath();ctx.setLineDash([5,4]);
+    ctx.moveTo(linkSrc.x,linkSrc.y);ctx.lineTo(mouseX,mouseY);
+    ctx.strokeStyle=curColor;ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);
+  }
+
+  /* NOEUDS — fond pâle, texte sombre, bien visible sur blanc */
+  nodes.forEach(n=>{
+    const isSel=n===selNode,isLink=n===linkSrc;
+    const rx=n.x-n.w/2,ry=n.y-n.h/2;
+
+    ctx.shadowColor=isSel||isLink?n.color:'rgba(0,0,0,0.10)';
+    ctx.shadowBlur=isSel||isLink?18:5;ctx.shadowOffsetY=isSel?0:2;
+
+    /* fond pâle de la couleur du nœud */
+    roundR(ctx,rx,ry,n.w,n.h,10);
+    ctx.fillStyle=lighten(n.color,0.88);ctx.fill();
+    ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+
+    /* bordure */
+    roundR(ctx,rx,ry,n.w,n.h,10);
+    ctx.strokeStyle=isSel||isLink?n.color:lighten(n.color,0.4);
+    ctx.lineWidth=isSel?2.5:1.8;ctx.stroke();
+
+    /* texte noir/foncé pour lisibilité maximale sur fond blanc */
+    ctx.font='bold 13px Outfit,sans-serif';
+    ctx.fillStyle=isSel?n.color:'#1e293b';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    n.text.split('\n').forEach((l,i,arr)=>{
+      ctx.fillText(l,n.x,n.y+(i-(arr.length-1)/2)*20);
+    });
+  });
+}
+
+/* EVENTS */
+function getP(e){
+  const r=canvas.getBoundingClientRect();
+  const t=e.touches?e.touches[0]:e;
+  return {x:(t.clientX-r.left)*(W/r.width),y:(t.clientY-r.top)*(H/r.height)};
+}
+
+canvas.addEventListener('mousemove',e=>{
+  const {x,y}=getP(e);mouseX=x;mouseY=y;
+  if(dragging&&dragNode){dragNode.x=x-dragOx;dragNode.y=y-dragOy;draw();}
+  else if(tool==='link'&&linkSrc)draw();
+});
+
+canvas.addEventListener('mousedown',e=>{
+  const {x,y}=getP(e);const n=nodeAt(x,y);
+  if(tool==='select'){
+    selNode=n;
+    if(n){dragging=true;dragNode=n;dragOx=x-n.x;dragOy=y-n.y;}
+    draw();
+  } else if(tool==='link'&&n){
+    if(!linkSrc){linkSrc=n;}
+    else if(linkSrc!==n){
+      if(!edges.find(e2=>(e2.a===linkSrc.id&&e2.b===n.id)||(e2.a===n.id&&e2.b===linkSrc.id)))
+        edges.push({a:linkSrc.id,b:n.id});
+      linkSrc=null;draw();
+    }
+  }
+});
+
+canvas.addEventListener('mouseup',()=>{dragging=false;dragNode=null;});
+
+canvas.addEventListener('dblclick',e=>{
+  if(tool!=='select')return;
+  const {x,y}=getP(e);const n=nodeAt(x,y);
+  if(n){const t=prompt('Modifier :',n.text);if(t!==null){n.text=t.trim()||n.text;measureN(n);draw();}}
+});
+
+canvas.addEventListener('click',e=>{
+  if(tool!=='node')return;
+  const {x,y}=getP(e);if(nodeAt(x,y))return;
+  const t=prompt('Texte du nœud :','');
+  if(t!==null&&t.trim()){addN(x,y,t.trim(),curColor);draw();}
+});
+
+function delSel(){
+  if(selNode){
+    edges=edges.filter(e=>e.a!==selNode.id&&e.b!==selNode.id);
+    nodes=nodes.filter(n=>n!==selNode);selNode=null;draw();
+  }
+}
+
+function clearM(){if(confirm('Effacer toute la carte ?')){nodes=[];edges=[];selNode=null;linkSrc=null;draw();}}
+
+/* MODÈLE */
+function loadTpl(){
+  if(nodes.length>0&&!confirm('Remplacer la carte par le modèle ?'))return;
+  nodes=[];edges=[];
+  const cx=W/2,cy=H/2;
+  const ctr=addN(cx,cy,'Python','#1e293b');
+
+  const topics=[
+    {t:'Variables',c:'#059669',dx:-210,dy:-150},
+    {t:'print() &\ninput()',c:'#7c3aed',dx:210,dy:-150},
+    {t:'Conditions\nif/elif/else',c:'#ea580c',dx:-240,dy:90},
+    {t:'Boucle for',c:'#db2777',dx:0,dy:195},
+    {t:'Listes',c:'#d97706',dx:240,dy:90},
+    {t:'Fonctions\ndef',c:'#2563eb',dx:0,dy:-200},
+  ];
+  const ch={};
+  topics.forEach(tp=>{
+    const n=addN(cx+tp.dx,cy+tp.dy,tp.t,tp.c);
+    edges.push({a:ctr.id,b:n.id});ch[tp.t]=n;
+  });
+
+  const subs=[
+    {p:'Variables',t:'age = 17',dx:-85,dy:-55,c:'#059669'},
+    {p:'Variables',t:'int / float\nstr / bool',dx:-85,dy:38,c:'#059669'},
+    {p:'print() &\ninput()',t:'print("Bonjour")',dx:100,dy:-55,c:'#7c3aed'},
+    {p:'print() &\ninput()',t:'nom = input(...)',dx:100,dy:38,c:'#7c3aed'},
+    {p:'Conditions\nif/elif/else',t:'if / elif / else',dx:-90,dy:85,c:'#ea580c'},
+    {p:'Boucle for',t:'for i in range(5)',dx:-110,dy:65,c:'#db2777'},
+    {p:'Boucle for',t:'for x in liste',dx:110,dy:65,c:'#db2777'},
+    {p:'Listes',t:'notes = [12,15]',dx:100,dy:85,c:'#d97706'},
+    {p:'Listes',t:'append / remove',dx:100,dy:155,c:'#d97706'},
+    {p:'Fonctions\ndef',t:'def saluer():',dx:-95,dy:-70,c:'#2563eb'},
+    {p:'Fonctions\ndef',t:'return valeur',dx:95,dy:-70,c:'#2563eb'},
+  ];
+  subs.forEach(s=>{
+    const p=ch[s.p];if(!p)return;
+    const n=addN(p.x+s.dx,p.y+s.dy,s.t,s.c);
+    edges.push({a:p.id,b:n.id});
+  });
+  draw();
+}
+
+function dlMap(){
+  draw();
+  const a=document.createElement('a');
+  a.download='ma_carte_mentale_python.png';
+  a.href=canvas.toDataURL('image/png');a.click();
+}
+
+window.addEventListener('resize',()=>{
+  if(document.getElementById('map-panel').classList.contains('active'))resizeC();
+});
+setTimeout(()=>{resizeC();loadTpl();},150);
+</script>
+</body>
+</html>
